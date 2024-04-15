@@ -1,6 +1,3 @@
-# TODO: check/debug (not bugs found yet) greedy function and traditional cost function
-# TODO: tune attrition (da)?
-
 from agent import Agent
 from target import Target
 import numpy as np

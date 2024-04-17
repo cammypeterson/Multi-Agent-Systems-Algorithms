@@ -1,0 +1,42 @@
+[build-system]
+# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
+requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# For smarter version schemes and other configuration options,
+# check out https://github.com/pypa/setuptools_scm
+version_scheme = "no-guess-dev"
+
+[project]
+name="GiNOD"
+authors = [
+    {name="Jackson Sahleen", email="jackson.sahleen@gmail.com"}
+]
+description="Implementation of the Game-induced Nonlinear Opinion Dynamics algorithm"
+readme="README.md"
+requires-python = ">=3.11"
+# license = GPL?
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "jax[cpu]",
+    "equinox",
+    "casadi",
+    "pyyaml"
+]
+
+dynamic = [
+    "version",
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "pyright",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]

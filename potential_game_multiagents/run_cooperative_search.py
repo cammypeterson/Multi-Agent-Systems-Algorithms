@@ -83,8 +83,10 @@ def main(args):
     if args.use_prior_map:
         print("Doing only cooperative motion")
         if args.prior_map_type == 'unif':
+            print("Spreading out agents uniformly")
             prior_map = np.ones((args.nrows,args.ncols)) / (args.nrows*args.ncols)
         elif args.prior_map_type == 'curve':
+            print("Spreading out agents along the curve")
             circle_center = (0, 0)  # Bottom left corner is (0, 0)
             circle_radius = args.nrows//2
             circle_width = args.nrows//4
@@ -129,7 +131,7 @@ def main(args):
         )
     coop_search = CooperativeSearch(prior_map)
     coop_search.add_agents(agents)
-    fig = env.plot_env(coop_search.agents, coop_search.eta_igt,t=0,display=False)
+    fig = env.plot_env(coop_search.agents, coop_search.eta_igt*100,t=0,display=False)
     fig.savefig(args.save_folder+f"all_agents_t0.png")
     plt.close(fig)
 
@@ -189,7 +191,9 @@ def main(args):
                     plt.close(fig)
                 # plt.show()
             else:
-                fig = env.plot_env(coop_search.agents, coop_search.eta_igt, t=itr, display=False)
+                fig = env.plot_env(coop_search.agents, coop_search.eta_igt*100, t=itr, display=False)
+                fig.savefig(args.save_folder+f"results_t{itr}.png")
+                plt.close(fig)
     progress_bar.close()
     if not args.use_prior_map:
         for n in range(N):
@@ -199,15 +203,19 @@ def main(args):
             plt.close(fig)
         # plt.show()
     else:
-        env.plot_env(coop_search.agents, coop_search.eta_igt, t=itr)
+        fig = env.plot_env(coop_search.agents, coop_search.eta_igt*100, t=itr, display=False)
+        fig.savefig(args.save_folder+"final_coverage_results.png")
+        plt.close(fig)
     
-    plt.figure()
+    fig = plt.figure()
     plt.plot(overall_coverage_performance)
     plt.xlabel("Iterations")
     if args.use_prior_map:
         plt.ylabel("Overall performance of coverage")
+        fig.savefig(args.save_folder+"average_coverage_score.png")
     else:
         plt.ylabel("Average Uncertainty")
+        fig.savefig(args.save_folder+"average_uncertainty_score.png")
     plt.show()
     return
 

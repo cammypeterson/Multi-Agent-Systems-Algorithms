@@ -157,31 +157,29 @@ class CooperativeSearch():
         return min_dist, min_agent
 
     def sensor_obsv_and_fusion(self,Rc,pc,pf,kn=1):
-        neighbors = []
         Hs = []
-        for n in range(self.N):
+        w_ijt = np.zeros((self.N,self.N))
+        for i in range(self.N):
             # Perform sensor observations & individual map update
-            Z_igt = self.agents[n].perform_observations(self.nrows,self.ncols)
-            H_igt = self.agents[n].update_prob_map(Z_igt,pc,pf,self.nrows,self.ncols)
-                        
-            # Transmit updated probability map to neighbors based on Rc
-            neighbor_idxs = self.get_neighbor_idxs(n, Rc)
-            neighbors.append(neighbor_idxs)
+            Z_igt = self.agents[i].perform_observations(self.nrows,self.ncols)
+            H_igt = self.agents[i].update_prob_map(Z_igt,pc,pf,self.nrows,self.ncols)
             Hs.append(H_igt)
+
+            # Transmit updated probability map to neighbors based on Rc
+            neighbor_idxs = self.get_neighbor_idxs(i, Rc)
+            ki = len(neighbor_idxs)
+            for j in range(self.N):
+                if (i != j) and (j in neighbor_idxs):
+                    kj = self.count_num_connections(j,Rc)
+                    w_ijt[i,j] = 1 / (1 + max(ki,kj))
+            w_ijt[i,i] = 1 - w_ijt[i,:].sum()
         
         for i in range(self.N):
-            w_ijt = np.zeros((self.N,))
-            # Compute Weight-Matrix
-            for j in range(self.N):
-                if j in neighbors[i] and j != i:
-                    w_ijt[j] = 1 / (1 + max(len(neighbors[i]),len(neighbors[j])))
-            w_ijt[i] = 1 - w_ijt.sum()
-        
             # Perform Information fusion
-            self.agents[i].do_sensor_fusion(Hs,w_ijt)
-
+            self.agents[i].do_sensor_fusion(Hs,w_ijt[i,:])
             # Update unceratinty map (i.e. eta_igt)
             self.agents[i].update_uncertainty_map(kn)
+        return
     
     def get_neighbor_idxs(self, agent_id, Rc):
         neighbor_idxs = []
@@ -190,3 +188,6 @@ class CooperativeSearch():
             if np.linalg.norm(self.agents[n].mu - agent_loc, ord=2) <= Rc:
                 neighbor_idxs.append(n)
         return neighbor_idxs
+    
+    def count_num_connections(self, agent_id, Rc):
+        return len(self.get_neighbor_idxs(agent_id, Rc))
